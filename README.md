@@ -1,6 +1,7 @@
 # 🚗 Business Travel Logbook Generator
 
 [![Live Web Generator](https://img.shields.io/badge/🚀%20Live%20Web%20App-Try%20Now%20In%20Browser-00C853?style=for-the-badge&logo=googlechrome&logoColor=white)](https://travismain.github.io/Logbook_Cal/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](file:///C:/Users/travism/source/repos/Logbook_Cal/LICENSE)
 
 A complete, customizable suite for generating SARS & Corporate compliant travel logbook spreadsheets (`.xlsx`) with exact odometer reconciliation, smart detour variances, and configurable client destinations.
 
@@ -113,3 +114,9 @@ Logbook_Cal/
 > 
 > **IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, AUDIT PENALTIES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
 
+---
+
+## 📄 License
+
+This project is open-source and licensed under the **[MIT License](file:///C:/Users/travism/source/repos/Logbook_Cal/LICENSE)**.  
+See the `LICENSE` file for full terms, conditions, and liability disclaimers.
