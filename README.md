@@ -1,6 +1,10 @@
 # 🚗 Business Travel Logbook Generator
 
+[![Live Web Generator](https://img.shields.io/badge/🚀%20Live%20Web%20App-Try%20Now%20In%20Browser-00C853?style=for-the-badge&logo=googlechrome&logoColor=white)](https://travismain.github.io/Logbook_Cal/)
+
 A complete, customizable suite for generating SARS & Corporate compliant travel logbook spreadsheets (`.xlsx`) with exact odometer reconciliation, smart detour variances, and configurable client destinations.
+
+> 🌐 **Try it instantly online without installing anything:** [**https://travismain.github.io/Logbook_Cal/**](https://travismain.github.io/Logbook_Cal/)
 
 ---
 
@@ -27,13 +31,17 @@ python logbook_gui.py
 
 ---
 
-### 2️⃣ Standalone Web Application (Runs in Any Browser — No Python Needed!)
+### 2️⃣ Web Application (Run Live Online or Locally in Any Browser!)
+You can use the Web Generator instantly right now in your browser without installing or downloading anything:
+- 🌐 **Live Online Generator:** [**https://travismain.github.io/Logbook_Cal/**](https://travismain.github.io/Logbook_Cal/)
+
+Or run it locally offline from your machine:
 Navigate to the `web_app/` directory and open `index.html` in your web browser:
 ```bash
 web_app/index.html
 ```
 - Or simply double-click `index.html` from your file explorer.
-- Features a premium, glassmorphic dark-mode UI.
+- Features a premium, glassmorphic dark-mode UI with smart client clustering and automatic holiday/vacation scheduling.
 - Uses `SheetJS` directly inside your web browser to calculate trips and download the Excel file (`.xlsx`) instantly.
 
 ---
