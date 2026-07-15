@@ -165,24 +165,71 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
         for (let i = 0; i < w; i++) weightedClients.push(c);
     });
 
-    const pool = [...weekdays];
-    const numTrips = Math.max(40, Math.min(pool.length - 10, Math.floor(remKm / Math.max(10, avgDist * 0.9))));
-    const step = Math.max(1, Math.floor(pool.length / numTrips));
+    // Select a random 2-week vacation period (14 days) between April 1st and October 1st of the start year
+    const startYear = startDt.getFullYear();
+    const vacStart = new Date(startYear, 3, 1 + Math.floor(Math.random() * 150)); // April 1st + up to 150 days
+    const vacEnd = new Date(vacStart);
+    vacEnd.setDate(vacStart.getDate() + 13); // 14 days total (inclusive)
 
-    let idx = 0;
-    const selectedDays = [];
-    while (idx < pool.length && selectedDays.length < numTrips) {
-        selectedDays.push(pool[idx]);
-        idx += step;
-    }
+    // Exclude standard SA public holidays and the simulated vacation period
+    const isHoliday = (date) => {
+        const y = date.getFullYear();
+        const m = date.getMonth();
+        const d = date.getDate();
+        
+        // Fixed SA public holidays
+        if (m === 0 && d === 1) return true;   // New Year's Day (Jan 1)
+        if (m === 2 && d === 21) return true;  // Human Rights Day (Mar 21)
+        if (m === 3 && d === 27) return true;  // Freedom Day (Apr 27)
+        if (m === 4 && d === 1) return true;   // Worker's Day (May 1)
+        if (m === 5 && d === 16) return true;  // Youth Day (Jun 16)
+        if (m === 7 && d === 9) return true;   // National Women's Day (Aug 9)
+        if (m === 8 && d === 24) return true;  // Heritage Day (Sep 24)
+        if (m === 11 && d === 16) return true; // Day of Reconciliation (Dec 16)
+        if (m === 11 && d === 25) return true; // Christmas Day (Dec 25)
+        if (m === 11 && d === 26) return true; // Day of Goodwill (Dec 26)
 
-    // Generate trip objects (simple or cluster)
-    const tripObjects = [];
-    selectedDays.forEach(dt => {
+        // Annual business shutdown: No business travel between 15th December and 5th January (inclusive)
+        if (m === 11 && d >= 15) return true;
+        if (m === 0 && d <= 5) return true;
+        
+        // Easter-related holidays (Good Friday / Family Day)
+        // Approximate for standard 2025/2026:
+        if (y === 2025) {
+            if (m === 3 && (d === 18 || d === 21)) return true; // Good Friday: Apr 18, Family Day: Apr 21
+        } else if (y === 2026) {
+            if (m === 3 && (d === 3 || d === 6)) return true;   // Good Friday: Apr 3, Family Day: Apr 6
+        }
+
+        // Simulated 2-week vacation period
+        if (date >= vacStart && date <= vacEnd) return true;
+        
+        return false;
+    };
+
+    const getMonthWeight = (date) => {
+        // December (month index 11) is quiet
+        if (date.getMonth() === 11) return 0.2;
+        return 1.0;
+    };
+
+    const activeWeekdays = weekdays.filter(dt => !isHoliday(dt));
+
+    // Shuffle pool with monthly weights (weighted random distribution)
+    const shuffledPool = activeWeekdays.map(dt => ({
+        sort: Math.random() * (1.0 / getMonthWeight(dt)),
+        value: dt
+    })).sort((a, b) => a.sort - b.sort).map(a => a.value);
+
+    // Initial estimate of number of trips needed
+    let numTrips = Math.max(40, Math.min(shuffledPool.length - 10, Math.floor(remKm / Math.max(10, avgDist * 0.9))));
+    let selectedDays = shuffledPool.slice(0, numTrips);
+
+    // Helper to build a trip object for a date
+    function buildTrip(dt) {
         if (clients.length >= 2 && Math.random() < 0.10) {
             const idx1 = Math.floor(Math.random() * clients.length);
             const c1 = clients[idx1];
-            // Find candidates that are within 15km of c1's distance
             const candidates = clients.filter((c, i) => i !== idx1 && Math.abs(c.dist - c1.dist) <= 15);
             
             if (candidates.length > 0) {
@@ -190,8 +237,7 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
                 const dist1 = roundOnly ? Math.round(c1.dist) : c1.dist;
                 const dist2 = roundOnly ? Math.round(c2.dist) : c2.dist;
                 const transitDist = roundOnly ? Math.round(5 + Math.random() * 10) : (5 + Math.random() * 10);
-
-                tripObjects.push({
+                return {
                     date: dt,
                     type: 'cluster',
                     clients: [c1.name, c2.name],
@@ -201,45 +247,64 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
                         { frm: c1.name, to: c2.name, dist: transitDist },
                         { frm: c2.name, to: "Work", dist: dist2 }
                     ]
-                });
-            } else {
-                const c = weightedClients[Math.floor(Math.random() * weightedClients.length)];
-                const dist = roundOnly ? Math.round(c.dist) : c.dist;
-                tripObjects.push({
-                    date: dt,
-                    type: 'simple',
-                    client: c.name,
-                    base_dist: c.dist,
-                    legs: [
-                        { frm: "Work", to: c.name, dist: dist },
-                        { frm: c.name, to: "Work", dist: dist }
-                    ]
-                });
+                };
             }
-        } else {
-            const c = weightedClients[Math.floor(Math.random() * weightedClients.length)];
-            const dist = roundOnly ? Math.round(c.dist) : c.dist;
-            tripObjects.push({
-                date: dt,
-                type: 'simple',
-                client: c.name,
-                base_dist: c.dist,
-                legs: [
-                    { frm: "Work", to: c.name, dist: dist },
-                    { frm: c.name, to: "Work", dist: dist }
-                ]
-            });
         }
-    });
+        
+        // Simple return trip
+        const c = weightedClients[Math.floor(Math.random() * weightedClients.length)];
+        const dist = roundOnly ? Math.round(c.dist) : c.dist;
+        return {
+            date: dt,
+            type: 'simple',
+            client: c.name,
+            base_dist: c.dist,
+            legs: [
+                { frm: "Work", to: c.name, dist: dist },
+                { frm: c.name, to: "Work", dist: dist }
+            ]
+        };
+    }
 
-    // Exact Balance
+    // Build initial trips
+    let tripObjects = selectedDays.map(dt => buildTrip(dt));
+
+    // Dynamic adjustment of trip counts to align close to targetBiz before micro-balancing
     let total = tripObjects.reduce((sum, t) => sum + t.legs.reduce((s, l) => s + l.dist, 0), 0);
-    let diff = Math.round((targetBiz - total) * 10) / 10;
+    let diff = targetBiz - total;
+
+    // Remaining unused days pool
+    let unusedDays = shuffledPool.slice(numTrips);
+
+    let adjustmentAttempts = 0;
+    while (Math.abs(diff) > 40 && adjustmentAttempts < 1000) {
+        adjustmentAttempts++;
+        if (diff > 0 && unusedDays.length > 0) {
+            const nextDt = unusedDays.pop();
+            const newT = buildTrip(nextDt);
+            tripObjects.push(newT);
+            diff -= newT.legs.reduce((s, l) => s + l.dist, 0);
+        } else if (diff < 0 && tripObjects.length > 30) {
+            const removed = tripObjects.pop();
+            unusedDays.push(removed.date);
+            diff += removed.legs.reduce((s, l) => s + l.dist, 0);
+        } else {
+            break;
+        }
+    }
+
+    // Sort trips chronologically for date progression realism
+    tripObjects.sort((a, b) => a.date - b.date);
+
+    // Exact balance
+    total = tripObjects.reduce((sum, t) => sum + t.legs.reduce((s, l) => s + l.dist, 0), 0);
+    diff = Math.round((targetBiz - total) * 10) / 10;
 
     if (roundOnly) {
         let diffInt = Math.round(diff);
         let oddAdjustedIdx = -1;
-        // Odd balancing: adjust one outbound leg by 1 km to make diffInt even
+        
+        // Odd balancing: adjust one leg of a simple trip
         if (diffInt % 2 !== 0) {
             for (let i = 0; i < tripObjects.length; i++) {
                 if (tripObjects[i].type === 'simple') {
@@ -252,10 +317,10 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
             }
         }
 
-        // Even balancing: adjust in pairs of 2 km
-        let attempts = 0;
-        while (diffInt !== 0 && attempts < 10000) {
-            attempts++;
+        // Even balancing: adjust in pairs of 2 km, enforcing STRICT maximum variance of +/- 2 km one-way!
+        let balancingAttempts = 0;
+        while (diffInt !== 0 && balancingAttempts < 20000) {
+            balancingAttempts++;
             const tIdx = Math.floor(Math.random() * tripObjects.length);
             if (tIdx === oddAdjustedIdx) continue;
             
@@ -263,11 +328,12 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
             if (t.type === 'simple') {
                 const base = t.base_dist;
                 const cur = t.legs[0].dist;
-                if (diffInt > 0 && cur < base + 12) {
+                // STRICT VARIANCE CHECK: No single leg can exceed +/- 2 km from base distance!
+                if (diffInt > 0 && cur < base + 2) {
                     t.legs[0].dist += 1;
                     t.legs[1].dist += 1;
                     diffInt -= 2;
-                } else if (diffInt < 0 && cur > Math.max(3, base - 12)) {
+                } else if (diffInt < 0 && cur > Math.max(1, base - 2)) {
                     t.legs[0].dist -= 1;
                     t.legs[1].dist -= 1;
                     diffInt += 2;
@@ -275,11 +341,11 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
             } else if (t.type === 'cluster') {
                 const base1 = t.base_dists[0];
                 const cur1 = t.legs[0].dist;
-                if (diffInt > 0 && cur1 < base1 + 12) {
+                if (diffInt > 0 && cur1 < base1 + 2) {
                     t.legs[0].dist += 1;
                     t.legs[2].dist += 1;
                     diffInt -= 2;
-                } else if (diffInt < 0 && cur1 > Math.max(3, base1 - 12)) {
+                } else if (diffInt < 0 && cur1 > Math.max(1, base1 - 2)) {
                     t.legs[0].dist -= 1;
                     t.legs[2].dist -= 1;
                     diffInt += 2;
@@ -288,9 +354,9 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
         }
     } else {
         // Decimal adjustment
-        let attempts = 0;
-        while (Math.abs(diff) > 1e-5 && attempts < 10000) {
-            attempts++;
+        let balancingAttempts = 0;
+        while (Math.abs(diff) > 1e-5 && balancingAttempts < 20000) {
+            balancingAttempts++;
             const t = tripObjects[Math.floor(Math.random() * tripObjects.length)];
             const delta = Math.round((diff > 0 ? 0.1 : -0.1) * 10) / 10;
             if (t.type === 'simple') {
@@ -321,11 +387,42 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
     const totalGapDays = gaps.reduce((sum, g) => sum + g.days, 0);
     const totalPrivKm = (closeOdo - openOdo) - targetBiz;
 
-    let privPerGap = gaps.map(g => totalPrivKm * g.days / totalGapDays);
+    let privPerGap = [];
     if (roundOnly) {
-        privPerGap = privPerGap.map(p => Math.round(p));
-        const err = totalPrivKm - privPerGap.reduce((a,b)=>a+b, 0);
-        privPerGap[privPerGap.length - 1] += err;
+        // Distribute private km with high random variance
+        privPerGap = gaps.map(g => {
+            const base = totalPrivKm * g.days / totalGapDays;
+            // High variance: multiply by random factor 0.4 to 1.6
+            const factor = 0.4 + Math.random() * 1.2;
+            return Math.round(base * factor);
+        });
+
+        // Reconcile rounding error randomly across all gaps so they remain integers
+        let sumPriv = privPerGap.reduce((a, b) => a + b, 0);
+        let err = totalPrivKm - sumPriv;
+        let reconAttempts = 0;
+        while (err !== 0 && reconAttempts < 5000) {
+            reconAttempts++;
+            const randIdx = Math.floor(Math.random() * privPerGap.length);
+            if (err > 0) {
+                privPerGap[randIdx]++;
+                err--;
+            } else {
+                if (privPerGap[randIdx] > 10) {
+                    privPerGap[randIdx]--;
+                    err++;
+                }
+            }
+        }
+    } else {
+        // Standard decimal distribution with slight random noise
+        privPerGap = gaps.map(g => {
+            const base = totalPrivKm * g.days / totalGapDays;
+            const factor = 0.8 + Math.random() * 0.4;
+            return Math.round(base * factor * 10) / 10;
+        });
+        const err = Math.round((totalPrivKm - privPerGap.reduce((a,b)=>a+b, 0)) * 10) / 10;
+        privPerGap[privPerGap.length - 1] = Math.round((privPerGap[privPerGap.length - 1] + err) * 10) / 10;
     }
 
     const privBefore = {};
