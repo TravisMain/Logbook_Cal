@@ -179,31 +179,43 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
     // Generate trip objects (simple or cluster)
     const tripObjects = [];
     selectedDays.forEach(dt => {
-        // 10% chance of cluster trip if we have at least 2 destinations
         if (clients.length >= 2 && Math.random() < 0.10) {
             const idx1 = Math.floor(Math.random() * clients.length);
-            let idx2 = Math.floor(Math.random() * clients.length);
-            while (idx2 === idx1) {
-                idx2 = Math.floor(Math.random() * clients.length);
-            }
             const c1 = clients[idx1];
-            const c2 = clients[idx2];
+            // Find candidates that are within 15km of c1's distance
+            const candidates = clients.filter((c, i) => i !== idx1 && Math.abs(c.dist - c1.dist) <= 15);
+            
+            if (candidates.length > 0) {
+                const c2 = candidates[Math.floor(Math.random() * candidates.length)];
+                const dist1 = roundOnly ? Math.round(c1.dist) : c1.dist;
+                const dist2 = roundOnly ? Math.round(c2.dist) : c2.dist;
+                const transitDist = roundOnly ? Math.round(5 + Math.random() * 10) : (5 + Math.random() * 10);
 
-            const dist1 = roundOnly ? Math.round(c1.dist) : c1.dist;
-            const dist2 = roundOnly ? Math.round(c2.dist) : c2.dist;
-            const transitDist = roundOnly ? Math.round(8 + Math.random() * 12) : (8 + Math.random() * 12);
-
-            tripObjects.push({
-                date: dt,
-                type: 'cluster',
-                clients: [c1.name, c2.name],
-                base_dists: [c1.dist, c2.dist],
-                legs: [
-                    { frm: "Work", to: c1.name, dist: dist1 },
-                    { frm: c1.name, to: c2.name, dist: transitDist },
-                    { frm: c2.name, to: "Work", dist: dist2 }
-                ]
-            });
+                tripObjects.push({
+                    date: dt,
+                    type: 'cluster',
+                    clients: [c1.name, c2.name],
+                    base_dists: [c1.dist, c2.dist],
+                    legs: [
+                        { frm: "Work", to: c1.name, dist: dist1 },
+                        { frm: c1.name, to: c2.name, dist: transitDist },
+                        { frm: c2.name, to: "Work", dist: dist2 }
+                    ]
+                });
+            } else {
+                const c = weightedClients[Math.floor(Math.random() * weightedClients.length)];
+                const dist = roundOnly ? Math.round(c.dist) : c.dist;
+                tripObjects.push({
+                    date: dt,
+                    type: 'simple',
+                    client: c.name,
+                    base_dist: c.dist,
+                    legs: [
+                        { frm: "Work", to: c.name, dist: dist },
+                        { frm: c.name, to: "Work", dist: dist }
+                    ]
+                });
+            }
         } else {
             const c = weightedClients[Math.floor(Math.random() * weightedClients.length)];
             const dist = roundOnly ? Math.round(c.dist) : c.dist;
@@ -226,6 +238,7 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
 
     if (roundOnly) {
         let diffInt = Math.round(diff);
+        let oddAdjustedIdx = -1;
         // Odd balancing: adjust one outbound leg by 1 km to make diffInt even
         if (diffInt % 2 !== 0) {
             for (let i = 0; i < tripObjects.length; i++) {
@@ -233,6 +246,7 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
                     tripObjects[i].legs[0].dist += (diffInt > 0 ? 1 : -1);
                     tripObjects[i].legs[0].dist = Math.max(1, tripObjects[i].legs[0].dist);
                     diffInt += (diffInt > 0 ? -1 : 1);
+                    oddAdjustedIdx = i;
                     break;
                 }
             }
@@ -242,7 +256,10 @@ function runTripGenerator(startDt, endDt, openOdo, closeOdo, targetBiz, roundOnl
         let attempts = 0;
         while (diffInt !== 0 && attempts < 10000) {
             attempts++;
-            const t = tripObjects[Math.floor(Math.random() * tripObjects.length)];
+            const tIdx = Math.floor(Math.random() * tripObjects.length);
+            if (tIdx === oddAdjustedIdx) continue;
+            
+            const t = tripObjects[tIdx];
             if (t.type === 'simple') {
                 const base = t.base_dist;
                 const cur = t.legs[0].dist;
