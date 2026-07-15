@@ -52,10 +52,9 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
     ws1.column_dimensions['A'].width = 5
     ws1.column_dimensions['B'].width = 30
     ws1.column_dimensions['C'].width = 20
-    ws1.column_dimensions['D'].width = 15
 
     # Title
-    ws1.merge_cells('B2:D2')
+    ws1.merge_cells('B2:C2')
     ws1['B2'].value = "BUSINESS TRAVEL LOGBOOK"
     ws1['B2'].font = Font(name='Calibri', size=20, bold=True, color='1F4E79')
     ws1['B2'].alignment = center_align
@@ -68,7 +67,7 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
     except Exception:
         period_str = f"{config['start_date']} – {config['end_date']}"
 
-    ws1.merge_cells('B3:D3')
+    ws1.merge_cells('B3:C3')
     ws1['B3'].value = period_str
     ws1['B3'].font = Font(name='Calibri', size=14, color='4472C4')
     ws1['B3'].alignment = center_align
@@ -80,20 +79,19 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
     private_km = total_km - biz_km
 
     summary_data = [
-        ("", "", ""),
-        ("Vehicle Summary", "", ""),
-        ("Opening Odometer:", f"{open_odo:,} km", ""),
-        ("Closing Odometer:", f"{close_odo:,} km", ""),
-        ("", "", ""),
-        ("Kilometre Summary", "", ""),
-        ("Total Vehicle km:", f"{total_km:,} km", ""),
-        ("Business km:", f"{biz_km:,} km", ""),
-        ("Private km:", f"{private_km:,} km", ""),
-        ("Business Use %:", f"{biz_km/max(1, total_km)*100:.1f}%", ""),
+        ("", ""),
+        ("Vehicle Summary", ""),
+        ("Opening Odometer:", f"{open_odo:,} km"),
+        ("Closing Odometer:", f"{close_odo:,} km"),
+        ("", ""),
+        ("Kilometre Summary", ""),
+        ("Total Vehicle km:", f"{total_km:,} km"),
+        ("Business km:", f"{biz_km:,} km"),
+        ("Private km:", f"{private_km:,} km"),
     ]
 
     row = 5
-    for label, value, _ in summary_data:
+    for label, value in summary_data:
         ws1.cell(row=row, column=2, value=label)
         ws1.cell(row=row, column=3, value=value)
         if "Summary" in label:
@@ -111,10 +109,9 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
     ws1.cell(row=row, column=2, value="Client Visit Summary").font = bold_font
     ws1.cell(row=row, column=2).border = bottom_border
     ws1.cell(row=row, column=3).border = bottom_border
-    ws1.cell(row=row, column=4).border = bottom_border
     row += 1
 
-    for col, header in enumerate(["Client", "Visits", "Frequency"], 2):
+    for col, header in enumerate(["Client", "Visits"], 2):
         cell = ws1.cell(row=row, column=col, value=header)
         cell.font = header_font
         cell.fill = header_fill
@@ -135,12 +132,6 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
         cell.fill = fill
         cell.border = thin_border
         cell.alignment = center_align
-
-        cell = ws1.cell(row=row, column=4, value=c.get("frequency", ""))
-        cell.font = small_font
-        cell.fill = fill
-        cell.border = thin_border
-        cell.alignment = center_align
         row += 1
 
     # Total row
@@ -153,23 +144,9 @@ def export_logbook_to_excel(config, ledger, all_trips, output_file_path):
     cell.fill = summary_fill
     cell.border = thin_border
     cell.alignment = center_align
-    ws1.cell(row=row, column=4).fill = summary_fill
-    ws1.cell(row=row, column=4).border = thin_border
-
-    # Notes
-    row += 2
-    ws1.cell(row=row, column=2, value="Notes:").font = bold_font
     row += 1
-    for note in config.get("notes", []):
-        ws1.cell(row=row, column=2, value=f"• {note}").font = small_font
-        row += 1
-    for h in config.get("holidays", []):
-        ws1.cell(row=row, column=2, value=f"• Holiday ({h.get('reason', 'Break')}): {h['start']} to {h['end']}").font = small_font
-        row += 1
-    if config.get("round_numbers_only", True):
-        ws1.cell(row=row, column=2, value="• All distances recorded as rounded integer kilometers (no decimals)").font = small_font
-        row += 1
-    ws1.cell(row=row, column=2, value=f"• Total trip events: {len(all_trips)} | Total legs: {len(ledger)}").font = small_font
+
+    row += 1
 
     # ============ SHEET 2: BUSINESS LOGBOOK ============
     ws2 = wb.create_sheet("Business Logbook")

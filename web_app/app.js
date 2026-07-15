@@ -397,8 +397,8 @@ function exportToXLSX(startStr, endStr, openOdo, closeOdo, targetBiz, roundOnly,
     // 1. COVER SHEET WORKBOOK
     const ws1 = {};
     ws1['!merges'] = [
-        { s: { r: 1, c: 1 }, e: { r: 1, c: 3 } }, // B2:D2 Title
-        { s: { r: 2, c: 1 }, e: { r: 2, c: 3 } }  // B3:D3 Subtitle
+        { s: { r: 1, c: 1 }, e: { r: 1, c: 2 } }, // B2:C2 Title
+        { s: { r: 2, c: 1 }, e: { r: 2, c: 2 } }  // B3:C3 Subtitle
     ];
 
     ws1['B2'] = { v: "BUSINESS TRAVEL LOGBOOK", t: 's', s: styleTitle };
@@ -419,18 +419,14 @@ function exportToXLSX(startStr, endStr, openOdo, closeOdo, targetBiz, roundOnly,
     ws1['C11'] = { v: targetBiz, t: 'n', z: '#,##0" km"', s: styleValue };
     ws1['B12'] = { v: "Private km:", t: 's', s: styleLabel };
     ws1['C12'] = { f: "C10-C11", t: 'n', z: '#,##0" km"', s: styleValue };
-    ws1['B13'] = { v: "Business Use %:", t: 's', s: styleLabel };
-    ws1['C13'] = { f: "C11/C10", t: 'n', z: '0.0%', s: styleValue };
 
-    ws1['B15'] = { v: "Client Visit Summary", t: 's', s: styleSectionHeader };
-    ws1['C15'] = emptyCell(styleSectionHeader);
-    ws1['D15'] = emptyCell(styleSectionHeader);
+    ws1['B14'] = { v: "Client Visit Summary", t: 's', s: styleSectionHeader };
+    ws1['C14'] = emptyCell(styleSectionHeader);
 
-    ws1['B16'] = { v: "Client / Destination", t: 's', s: styleHeader };
-    ws1['C16'] = { v: "Visits", t: 's', s: styleHeader };
-    ws1['D16'] = { v: "Frequency", t: 's', s: styleHeader };
+    ws1['B15'] = { v: "Client / Destination", t: 's', s: styleHeader };
+    ws1['C15'] = { v: "Visits", t: 's', s: styleHeader };
 
-    let rIdx = 17;
+    let rIdx = 16;
     clients.forEach((c, i) => {
         const rowBg = i % 2 === 0 ? 'D6E4F0' : 'FFFFFF';
         const styleRowLabel = {
@@ -448,7 +444,6 @@ function exportToXLSX(startStr, endStr, openOdo, closeOdo, targetBiz, roundOnly,
 
         ws1[`B${rIdx}`] = { v: c.name, t: 's', s: styleRowLabel };
         ws1[`C${rIdx}`] = { v: visitCounts[c.name] || 0, t: 'n', z: '#,##0', s: styleRowVal };
-        ws1[`D${rIdx}`] = { v: c.freq, t: 's', s: styleRowVal };
         rIdx++;
     });
 
@@ -466,16 +461,10 @@ function exportToXLSX(startStr, endStr, openOdo, closeOdo, targetBiz, roundOnly,
     };
 
     ws1[`B${rIdx}`] = { v: "TOTAL VISITS", t: 's', s: styleSummaryLabel };
-    ws1[`C${rIdx}`] = { f: `SUM(C17:C${rIdx-1})`, t: 'n', z: '#,##0', s: styleSummary };
-    ws1[`D${rIdx}`] = emptyCell(styleSummary);
+    ws1[`C${rIdx}`] = { f: `SUM(C16:C${rIdx-1})`, t: 'n', z: '#,##0', s: styleSummary };
 
-    rIdx += 2;
-    ws1[`B${rIdx}`] = { v: "Notes:", t: 's', s: { font: { name: fontName, sz: 11, bold: true } } };
-    ws1[`B${rIdx+1}`] = { v: "• Generated using Business Travel Logbook Generator", t: 's', s: { font: { name: fontName, sz: 9 } } };
-    ws1[`B${rIdx+2}`] = { v: roundOnly ? "• All distances recorded as rounded integer kilometers (no decimals)" : "• Distances include standard decimal recordings", t: 's', s: { font: { name: fontName, sz: 9 } } };
-
-    ws1['!ref'] = `A1:D${rIdx+3}`;
-    ws1['!cols'] = [{ wch: 5 }, { wch: 32 }, { wch: 20 }, { wch: 18 }];
+    ws1['!ref'] = `A1:C${rIdx}`;
+    ws1['!cols'] = [{ wch: 5 }, { wch: 32 }, { wch: 20 }];
 
     XLSX.utils.book_append_sheet(wb, ws1, "Cover Sheet");
 
