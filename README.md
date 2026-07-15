@@ -42,7 +42,7 @@ Navigate to the `web_app/` directory and open `index.html` in your web browser:
 web_app/index.html
 ```
 - Or simply double-click `index.html` from your file explorer.
-- Features a premium, glassmorphic dark-mode UI with smart client clustering and automatic holiday/vacation scheduling.
+- Features a clean, professional corporate layout with smart route balancing, date-randomization, and automatic holiday/vacation scheduling.
 - Uses `SheetJS` directly inside your web browser to calculate trips and download the Excel file (`.xlsx`) instantly.
 
 ---
