@@ -70,11 +70,12 @@ You can edit `config.json` directly to store custom templates for different staf
         {"start": "2025-07-01", "end": "2025-07-14", "reason": "Annual Holiday"}
     ],
     "saturdays": [
-        {"client": "Coke Devlin", "count": 2}
+        {"client": "Alpha Logistics / Client B", "count": 2}
     ],
     "clients": [
-        {"name": "Full Swing Engineering", "one_way_km": 7, "frequency": "Very Frequent"},
-        {"name": "Coke Devlin", "one_way_km": 17, "frequency": "Very Frequent"}
+        {"name": "Acme Engineering Ltd", "one_way_km": 12, "frequency": "Very Frequent"},
+        {"name": "Alpha Logistics / Client B", "one_way_km": 25, "frequency": "Very Frequent"},
+        {"name": "Beta Enterprises / Client C", "one_way_km": 45, "frequency": "Regular"}
     ]
 }
 ```
