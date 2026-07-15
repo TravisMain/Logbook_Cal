@@ -95,3 +95,20 @@ Logbook_Cal/
 │   └── app.js                # SheetJS Client-side Engine
 └── README.md                 # Documentation
 ```
+
+---
+
+## ⚖️ Legal & Limitation of Liability Disclaimer
+
+> [!CAUTION]
+> **FOR EDUCATIONAL, RECONCILIATION, AND TEMPLATE PURPOSES ONLY**
+> 
+> By downloading, installing, running, or accessing this software (including the standalone CLI, Desktop GUI, or the online Web Generator hosted on GitHub Pages), **you explicitly acknowledge and agree to the following terms:**
+> 
+> 1. **No Responsibility or Liability**: The creator(s), author(s), and contributor(s) of this repository and software assume **ZERO RESPONSIBILITY OR LIABILITY** whatsoever for any financial, tax, legal, penal, audit, or statutory consequences arising from the use of this software, its formulas, or its generated Excel spreadsheets (`.xlsx`).
+> 2. **Strictly Educational & Template Tool**: This application is provided solely as a mathematical template generator and educational reference tool to assist users in structuring and reconciling their odometer mileage and travel records. It does **NOT** constitute professional tax advice, accounting advice, or legal advice.
+> 3. **User Responsibility & Verification**: You (the user) are **strictly and solely responsible** for verifying the accuracy, truthfulness, and legal compliance of any travel logbook, tax deduction claim (`ITR12`), or travel allowance document submitted to the **South African Revenue Service (SARS)**, any corporate employer, or any other tax authority globally.
+> 4. **Compliance with Statutory Tax Laws**: Submitting fabricated, fraudulent, or inaccurate travel records to tax authorities is a statutory offense. You must ensure that every trip logged, odometer figure recorded, and destination claimed accurately reflects genuine business travel and verified vehicle history.
+> 
+> **IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, AUDIT PENALTIES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.**
+
