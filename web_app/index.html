@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Travel Logbook Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Styled SheetJS for client-side Excel export with colors and fonts -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="container">
+        <header class="app-header">
+            <div class="badge">PRO EXCEL EXPORT</div>
+            <h1>Business Travel <span class="gradient-text">Logbook Generator</span></h1>
+            <p class="subtitle">Generate SARS & Corporate compliant travel logbooks with exact odometer matching and smart detour variances in seconds.</p>
+        </header>
+
+        <main class="main-grid">
+            <!-- Left Column: Parameters -->
+            <section class="card param-card">
+                <h2><span class="icon">⚙️</span> 1. Trip & Vehicle Parameters</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="openOdo">Opening Odometer (km)</label>
+                        <input type="number" id="openOdo" value="" placeholder="e.g. 10000" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="closeOdo">Closing Odometer (km)</label>
+                        <input type="number" id="closeOdo" value="" placeholder="e.g. 25000" step="1">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="targetBizKm">Target Business Kilometres (km)</label>
+                        <input type="number" id="targetBizKm" value="" placeholder="e.g. 5000" step="1">
+                    </div>
+                </div>
+
+                <div class="toggle-group">
+                    <label class="switch">
+                        <input type="checkbox" id="roundOnly" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <div class="toggle-label">
+                        <strong>Round whole integer km only</strong>
+                        <span>No decimal numbers will appear in your distances or odometer readings.</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Column: Clients Table -->
+            <section class="card clients-card">
+                <div class="card-header">
+                    <h2><span class="icon">📍</span> 2. Client Destinations & Frequencies</h2>
+                    <button id="addClientBtn" class="btn btn-secondary">➕ Add Destination</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="clientsTable">
+                        <thead>
+                            <tr>
+                                <th>Client / Destination Name</th>
+                                <th class="text-center">One-way (km)</th>
+                                <th class="text-center">Frequency</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="action-footer">
+            <div class="summary-live" id="liveSummary">
+                <span class="stat">Total Vehicle: <strong id="statTotalKm">0</strong> km</span>
+                <span class="stat">Business: <strong id="statBizKm">0</strong> km (<span id="statBizPct">0.0%</span>)</span>
+                <span class="stat">Private: <strong id="statPrivateKm">0</strong> km</span>
+            </div>
+            <button id="generateBtn" class="btn btn-primary glow-btn">
+                <span class="btn-icon">✨</span> Generate & Download Excel Logbook (.xlsx)
+            </button>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

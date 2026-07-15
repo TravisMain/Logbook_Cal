@@ -1,0 +1,14 @@
+{
+    "start_date": "",
+    "end_date": "",
+    "opening_odo": 0,
+    "closing_odo": 0,
+    "target_business_km": 0,
+    "round_numbers_only": true,
+    "holidays": [],
+    "saturdays": [],
+    "clients": [],
+    "notes": [
+        "Generated using Business Travel Logbook Generator"
+    ]
+}
